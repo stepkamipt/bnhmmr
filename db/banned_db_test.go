@@ -28,7 +28,7 @@ func TestInsertBannedIPs(t *testing.T) {
 
 	bannedIP := models.BannedIPEntry{
 		IP:         "1.2.3.4",
-		BannedFrom: time.Now(),
+		BannedTill: time.Now(),
 	}
 	err = db.InsertBannedIP(bannedIP)
 	if err != nil {
@@ -36,7 +36,7 @@ func TestInsertBannedIPs(t *testing.T) {
 		return
 	}
 
-	bannedIPs, err := db.GetIPsBannedBefore(time.Now())
+	bannedIPs, err := db.GetExpiredEntries(time.Now())
 	if err != nil {
 		t.Errorf("err get values from database %v", err)
 		return
@@ -50,7 +50,7 @@ func TestInsertBannedIPs(t *testing.T) {
 		t.Errorf("err remove banned IP from database %v", err)
 		return
 	}
-	bannedIPs, err = db.GetIPsBannedBefore(time.Now())
+	bannedIPs, err = db.GetExpiredEntries(time.Now())
 	if err != nil {
 		t.Errorf("err get values from database %v", err)
 		return

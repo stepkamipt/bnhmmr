@@ -7,7 +7,7 @@ import (
 
 func main() {
 	if err := banning_loop.StartBanningLoop(); err != nil {
-		log.Printf("banning loop error %w", err)
+		log.Printf("banning loop error %s", err)
 		return
 	}
 }

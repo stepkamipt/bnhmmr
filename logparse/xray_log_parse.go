@@ -4,16 +4,24 @@ import (
 	"bufio"
 	"fmt"
 	"goipban/config"
-	"goipban/models"
 	"net"
 	"os"
 	"time"
 )
 
+type XRayLogEntry struct {
+	Time     time.Time `json:"time"`
+	FromIP   string    `json:"from_ip"`
+	FromPort string    `json:"from_port"`
+	To       string    `json:"to"`
+	Inbound  string    `json:"inbound"`
+	Outbound string    `json:"outbound"`
+}
+
 // log file already parsed from beginning to this position
-func GetBlacklistedXRayLogEntries() ([]models.XRayLogEntry, error) {
+func GetBlacklistedXRayLogEntries() ([]XRayLogEntry, error) {
 	// list of banned ip entries
-	var blacklistedIPEntries []models.XRayLogEntry
+	var blacklistedIPEntries []XRayLogEntry
 
 	// Open the logs file in read-only mode
 	logFile, err := os.Open(config.XRayLogs.FilePath)
@@ -26,7 +34,7 @@ func GetBlacklistedXRayLogEntries() ([]models.XRayLogEntry, error) {
 	scanner := bufio.NewScanner(logFile)
 
 	// collect ip's last mentions as addresses to be banned
-	var lastBaningIPsOccurences = make(map[string]models.XRayLogEntry)
+	var lastBaningIPsOccurences = make(map[string]XRayLogEntry)
 	for scanner.Scan() {
 		// Get the current line
 		line := scanner.Text()
@@ -60,7 +68,7 @@ BlacklistLineSample: `2025/13/01 12:34:56 // 0, 1
 	[inbound -> blacklist]                // 6, 7, 8
 	email: user_mail`,                    // 9
 */
-func parseXRayLogLine(logLine string) *models.XRayLogEntry {
+func parseXRayLogLine(logLine string) *XRayLogEntry {
 	spacePositions := findCharPositions(logLine, ' ')
 
 	if len(spacePositions) != 10 {
@@ -85,7 +93,7 @@ func parseXRayLogLine(logLine string) *models.XRayLogEntry {
 	inbound := logLine[spacePositions[5]+2 : spacePositions[6]]
 	outbound := logLine[spacePositions[7]+1 : spacePositions[8]-1]
 
-	return &models.XRayLogEntry{
+	return &XRayLogEntry{
 		Time:     time,
 		FromIP:   ip,
 		FromPort: port,

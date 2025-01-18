@@ -36,7 +36,7 @@ func runCommand(cmd string) error {
 	args := parts[1:]
 
 	if config.Testing.RunStubCommands {
-		return nil
+		return nil // don't ban, just print
 	}
 
 	out, err := exec.Command(head, args...).CombinedOutput()

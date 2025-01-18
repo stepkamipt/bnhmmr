@@ -13,6 +13,13 @@ var Ban = struct {
 	UnbanCommand: "ufw delete deny from %s",
 }
 
+// Process params
+var Process = struct {
+	UpdateInterval time.Duration
+}{
+	UpdateInterval: 15 * time.Second,
+}
+
 // XRay logs params
 var XRayLogs = struct {
 	FilePath            string
@@ -29,24 +36,17 @@ var BannedDB = struct {
 	FilePath      string
 	Table         string
 	IPCol         string
-	BannedFromCol string
+	BannedTillCol string
 }{
 	FilePath:      "banned.sqlitedb",
 	Table:         "banned_users",
 	IPCol:         "ip",
-	BannedFromCol: "banned_from",
-}
-
-// Process params
-var Process = struct {
-	Autoupdate time.Duration
-}{
-	Autoupdate: 15 * time.Second,
+	BannedTillCol: "banned_till",
 }
 
 // Testing params
 var Testing = struct {
 	RunStubCommands bool
 }{
-	RunStubCommands: false,
+	RunStubCommands: false, // don't really ban anybody, just log info
 }

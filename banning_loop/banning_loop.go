@@ -20,14 +20,12 @@ func StartBanningLoop() error {
 	defer bannedDB.Close()
 
 	for {
-		time.Sleep(config.Process.Autoupdate)
+		time.Sleep(config.Process.UpdateInterval)
 
 		if err = banningLoopIteration(*bannedDB); err != nil {
 			log.Printf("banning failed: %s", err)
 		}
 	}
-
-	return nil
 }
 
 func banningLoopIteration(bannedDB db.BannedDB) error {
@@ -50,12 +48,12 @@ func banningLoopIteration(bannedDB db.BannedDB) error {
 	return nil
 }
 
-func banNonBannedIPs(bannedDB db.BannedDB, logEntriesToBan []models.XRayLogEntry) error {
+func banNonBannedIPs(bannedDB db.BannedDB, logEntriesToBan []logparse.XRayLogEntry) error {
 	// ban every non-banned IP in logs
 	var bannedIPCount int
 	for i := range logEntriesToBan {
 		// check if IP already banned
-		isBannedIP, err := bannedDB.IsBannedIP(logEntriesToBan[i].FromIP)
+		isBannedIP, err := bannedDB.ContainsIP(logEntriesToBan[i].FromIP)
 		if err != nil {
 			return fmt.Errorf("can not query database %s", err)
 		}
@@ -66,7 +64,7 @@ func banNonBannedIPs(bannedDB db.BannedDB, logEntriesToBan []models.XRayLogEntry
 		// ban IP
 		banningIP := models.BannedIPEntry{
 			IP:         logEntriesToBan[i].FromIP,
-			BannedFrom: logEntriesToBan[i].Time,
+			BannedTill: logEntriesToBan[i].Time.Add(config.Ban.Duration),
 		}
 		err = bannedDB.InsertBannedIP(banningIP)
 		if err != nil {
@@ -86,7 +84,7 @@ func banNonBannedIPs(bannedDB db.BannedDB, logEntriesToBan []models.XRayLogEntry
 
 func unbanReleasingIPs(bannedDB db.BannedDB) error {
 	// unban IP's which unban time has come
-	ipsToUnban, err := bannedDB.GetIPsBannedBefore(time.Now().Add(-config.Ban.Duration))
+	ipsToUnban, err := bannedDB.GetExpiredEntries(time.Now())
 	if err != nil {
 		return fmt.Errorf("can not query database %s", err)
 	}
@@ -101,7 +99,7 @@ func unbanReleasingIPs(bannedDB db.BannedDB) error {
 		err = bannedDB.RemoveBannedIP(ipsToUnban[i].IP)
 		unbannedIPCount++
 		if err != nil {
-			log.Println("can not access database %s", err)
+			log.Printf("can not access database %s", err)
 			return err
 		}
 	}

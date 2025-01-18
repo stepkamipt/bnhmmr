@@ -2,7 +2,6 @@ package logparse
 
 import (
 	"goipban/config"
-	"goipban/models"
 	"testing"
 	"time"
 )
@@ -11,12 +10,12 @@ func TestParseXRayLogLine(t *testing.T) {
 	// Test cases
 	test := struct {
 		source   string
-		expected models.XRayLogEntry
+		expected XRayLogEntry
 	}{
 		source: config.XRayLogs.BlacklistLineSample,
 
-		expected: models.XRayLogEntry{
-			Time:     time.Date(2025, time.January, 13, 12, 34, 56, 0, time.UTC),
+		expected: XRayLogEntry{
+			Time:     time.Date(2025, time.January, 13, 12, 34, 56, 0, time.Local),
 			FromIP:   "12.34.56.78",
 			FromPort: "9999",
 			To:       "tcp:https://ya.ru:443",

@@ -34,7 +34,7 @@ func ConnectToBannedDB() (*BannedDB, error) {
 	)`,
 		config.BannedDB.Table,
 		config.BannedDB.IPCol,
-		config.BannedDB.BannedFromCol,
+		config.BannedDB.BannedTillCol,
 	)
 
 	_, err = db.Exec(createTableQuery)
@@ -53,10 +53,10 @@ func (b *BannedDB) InsertBannedIP(banEntry models.BannedIPEntry) error {
 	`,
 		config.BannedDB.Table,
 		config.BannedDB.IPCol,
-		config.BannedDB.BannedFromCol,
+		config.BannedDB.BannedTillCol,
 	)
 
-	_, err := b.db.Exec(query, banEntry.IP, banEntry.BannedFrom)
+	_, err := b.db.Exec(query, banEntry.IP, banEntry.BannedTill)
 	if err != nil {
 		return fmt.Errorf("failed to add banned IP: %w", err)
 	}
@@ -81,7 +81,7 @@ func (b *BannedDB) RemoveBannedIP(ip string) error {
 	return nil
 }
 
-func (b *BannedDB) IsBannedIP(ip string) (bool, error) {
+func (b *BannedDB) ContainsIP(ip string) (bool, error) {
 	query := fmt.Sprintf(`
 		SELECT COUNT(1) FROM %s WHERE %s = ?
 	`,
@@ -97,8 +97,8 @@ func (b *BannedDB) IsBannedIP(ip string) (bool, error) {
 	return count > 0, nil
 }
 
-// GetBannedIPsBefore retrieves items from the table where BanTime is less than the given time
-func (b *BannedDB) GetIPsBannedBefore(beforeTime time.Time) ([]models.BannedIPEntry, error) {
+// GetExpiredEntries retrieves items which should be unbanned at timeMoment
+func (b *BannedDB) GetExpiredEntries(timeMoment time.Time) ([]models.BannedIPEntry, error) {
 	// Query to select items with BanTime less than the given value
 	query := fmt.Sprintf(`
 		SELECT %s, %s
@@ -106,12 +106,13 @@ func (b *BannedDB) GetIPsBannedBefore(beforeTime time.Time) ([]models.BannedIPEn
 		WHERE %s < ?
 	`,
 		config.BannedDB.IPCol,
-		config.BannedDB.BannedFromCol,
+		config.BannedDB.BannedTillCol,
 		config.BannedDB.Table,
-		config.BannedDB.BannedFromCol)
+		config.BannedDB.BannedTillCol,
+	)
 
 	// Execute the query
-	rows, err := b.db.Query(query, beforeTime)
+	rows, err := b.db.Query(query, timeMoment)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
@@ -121,7 +122,7 @@ func (b *BannedDB) GetIPsBannedBefore(beforeTime time.Time) ([]models.BannedIPEn
 	var entries []models.BannedIPEntry
 	for rows.Next() {
 		var entry models.BannedIPEntry
-		if err := rows.Scan(&entry.IP, &entry.BannedFrom); err != nil {
+		if err := rows.Scan(&entry.IP, &entry.BannedTill); err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
 		entries = append(entries, entry)
