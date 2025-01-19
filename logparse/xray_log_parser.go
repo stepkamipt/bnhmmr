@@ -59,7 +59,7 @@ func (p *XRayLogParser) GetBlacklistedXRayLogEntries() ([]XRayLogEntry, error) {
 	}
 
 	// select IPs which was banned not too much time ago
-	earliestBannableTime := time.Now().Add(-p.config.BanDuration)
+	earliestBannableTime := time.Now().Add(-p.config.BanDuration.TimeDuration())
 	for _, logEntry := range lastBaningIPsOccurences {
 		if logEntry.Time.After(earliestBannableTime) {
 			blacklistedIPEntries = append(blacklistedIPEntries, logEntry)

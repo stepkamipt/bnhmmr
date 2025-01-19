@@ -37,7 +37,7 @@ func (b *BanningLoop) StartBanningLoop() error {
 	defer bannedDB.Close()
 
 	for {
-		time.Sleep(b.config.UpdateInterval)
+		time.Sleep(b.config.UpdateInterval.TimeDuration())
 
 		if err = b.banningLoopIteration(*bannedDB); err != nil {
 			log.Printf("banning failed: %s", err)
@@ -81,7 +81,7 @@ func (b *BanningLoop) banNonBannedIPs(bannedDB db.BannedDB, logEntriesToBan []lo
 		// ban IP
 		banningIP := models.BannedIPEntry{
 			IP:         logEntriesToBan[i].FromIP,
-			BannedTill: logEntriesToBan[i].Time.Add(b.config.BanDuration),
+			BannedTill: logEntriesToBan[i].Time.Add(b.config.BanDuration.TimeDuration()),
 		}
 		err = bannedDB.InsertBannedIP(banningIP)
 		if err != nil {
