@@ -2,7 +2,6 @@ package ipban
 
 import (
 	"fmt"
-	"goipban/config"
 	"log"
 	"os/exec"
 	"strings"
@@ -18,14 +17,24 @@ var commands = struct {
 	Apply: "ufw reload",
 }
 
+// tool to ban/unban IPs
+type IPBanner struct {
+	debugMode bool
+}
+
+// NewBanDB creates or opens the SQLite database and initializes the table
+func CreateIPBanner(debugMode bool) IPBanner {
+	return IPBanner{debugMode: debugMode}
+}
+
 // Ban the IP using UFW
-func BanIP(ip string) error {
+func (b *IPBanner) BanIP(ip string) error {
 	log.Printf("Banning IP: %s\n", ip)
-	if err := runCommand(fmt.Sprintf(commands.Ban, ip)); err != nil {
+	if err := b.runCommand(fmt.Sprintf(commands.Ban, ip)); err != nil {
 		log.Printf("Error banning IP %s: %v\n", ip, err)
 		return err
 	}
-	if err := runCommand(commands.Apply); err != nil {
+	if err := b.runCommand(commands.Apply); err != nil {
 		log.Printf("Error applying ban: %v\n", err)
 		return err
 	}
@@ -33,13 +42,13 @@ func BanIP(ip string) error {
 }
 
 // Unan the IP using UFW
-func UnbanIP(ip string) error {
+func (b *IPBanner) UnbanIP(ip string) error {
 	log.Printf("Unbanning IP: %s\n", ip)
-	if err := runCommand(fmt.Sprintf(commands.Unban, ip)); err != nil {
+	if err := b.runCommand(fmt.Sprintf(commands.Unban, ip)); err != nil {
 		log.Printf("Error unbanning IP %s: %v\n", ip, err)
 		return err
 	}
-	if err := runCommand(commands.Apply); err != nil {
+	if err := b.runCommand(commands.Apply); err != nil {
 		log.Printf("Error applying unban: %v\n", err)
 		return err
 	}
@@ -47,13 +56,13 @@ func UnbanIP(ip string) error {
 }
 
 // runCommand executes shell commands
-func runCommand(cmd string) error {
+func (b *IPBanner) runCommand(cmd string) error {
 	log.Printf("Executing command: %s\n", cmd)
 	parts := strings.Fields(cmd)
 	head := parts[0]
 	args := parts[1:]
 
-	if config.DebugRunStubCommands {
+	if b.debugMode {
 		return nil // don't ban, just print
 	}
 

@@ -1,6 +1,7 @@
 package logparse
 
 import (
+	"goipban/config"
 	"testing"
 	"time"
 )
@@ -42,7 +43,13 @@ func TestParseXRayLogLine(t *testing.T) {
 
 func TestGetBlacklistedXRayLogEntries(t *testing.T) {
 	t.Run("", func(t *testing.T) {
-		result, err := GetBlacklistedXRayLogEntries()
+		config, err := config.LoadConfig("")
+		if err != nil {
+			t.Fatalf("Can not load config %s", err)
+		}
+		logParser := CreateXRayLogParser(*config)
+
+		result, err := logParser.GetBlacklistedXRayLogEntries()
 		if err != nil {
 			t.Errorf("GetBlacklistedXRayLogEntries returns error %s", err)
 		} else {

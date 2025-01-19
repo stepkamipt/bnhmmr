@@ -18,13 +18,23 @@ type XRayLogEntry struct {
 	Outbound string    `json:"outbound"`
 }
 
+// tool to parse xray logs
+type XRayLogParser struct {
+	config config.Config
+}
+
+// NewBanDB creates or opens the SQLite database and initializes the table
+func CreateXRayLogParser(config config.Config) XRayLogParser {
+	return XRayLogParser{config: config}
+}
+
 // log file already parsed from beginning to this position
-func GetBlacklistedXRayLogEntries() ([]XRayLogEntry, error) {
+func (p *XRayLogParser) GetBlacklistedXRayLogEntries() ([]XRayLogEntry, error) {
 	// list of banned ip entries
 	var blacklistedIPEntries []XRayLogEntry
 
 	// Open the logs file in read-only mode
-	logFile, err := os.Open(config.XRayLogsFilePath)
+	logFile, err := os.Open(p.config.XRayLogsFile)
 	if err != nil {
 		return blacklistedIPEntries, fmt.Errorf("error opening file: %v", err)
 	}
@@ -42,14 +52,14 @@ func GetBlacklistedXRayLogEntries() ([]XRayLogEntry, error) {
 		// Parse current line
 		if parsedLineEntry := parseXRayLogLine(line); parsedLineEntry != nil {
 			// check if line is about ban
-			if parsedLineEntry.Outbound == config.XRayBlacklistOutbound {
+			if parsedLineEntry.Outbound == p.config.XRayBlacklistOutbound {
 				lastBaningIPsOccurences[parsedLineEntry.FromIP] = *parsedLineEntry
 			}
 		}
 	}
 
 	// select IPs which was banned not too much time ago
-	earliestBannableTime := time.Now().Add(-config.BanDuration)
+	earliestBannableTime := time.Now().Add(-p.config.BanDuration)
 	for _, logEntry := range lastBaningIPsOccurences {
 		if logEntry.Time.After(earliestBannableTime) {
 			blacklistedIPEntries = append(blacklistedIPEntries, logEntry)
