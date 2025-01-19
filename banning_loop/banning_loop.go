@@ -13,14 +13,14 @@ import (
 
 func StartBanningLoop() error {
 	// connect to database
-	bannedDB, err := db.ConnectToBannedDB()
+	bannedDB, err := db.ConnectToBannedDB(config.BannedDatabaseFile)
 	if err != nil {
 		return fmt.Errorf("failed to connect banned db: %w", err)
 	}
 	defer bannedDB.Close()
 
 	for {
-		time.Sleep(config.Process.UpdateInterval)
+		time.Sleep(config.UpdateInterval)
 
 		if err = banningLoopIteration(*bannedDB); err != nil {
 			log.Printf("banning failed: %s", err)
@@ -64,7 +64,7 @@ func banNonBannedIPs(bannedDB db.BannedDB, logEntriesToBan []logparse.XRayLogEnt
 		// ban IP
 		banningIP := models.BannedIPEntry{
 			IP:         logEntriesToBan[i].FromIP,
-			BannedTill: logEntriesToBan[i].Time.Add(config.Ban.Duration),
+			BannedTill: logEntriesToBan[i].Time.Add(config.BanDuration),
 		}
 		err = bannedDB.InsertBannedIP(banningIP)
 		if err != nil {
@@ -77,7 +77,9 @@ func banNonBannedIPs(bannedDB db.BannedDB, logEntriesToBan []logparse.XRayLogEnt
 		}
 		bannedIPCount++
 	}
-	log.Printf("Banned %d IP", bannedIPCount)
+	if bannedIPCount > 0 {
+		log.Printf("Banned %d IP", bannedIPCount)
+	}
 
 	return nil
 }
@@ -103,7 +105,9 @@ func unbanReleasingIPs(bannedDB db.BannedDB) error {
 			return err
 		}
 	}
-	log.Printf("Unbanned %d IP", unbannedIPCount)
+	if unbannedIPCount > 0 {
+		log.Printf("Unbanned %d IP", unbannedIPCount)
+	}
 
 	return nil
 }

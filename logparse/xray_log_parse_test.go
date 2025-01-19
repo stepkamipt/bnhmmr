@@ -1,10 +1,16 @@
 package logparse
 
 import (
-	"goipban/config"
 	"testing"
 	"time"
 )
+
+const blacklistLineSample = "2025/01/13 12:34:56 " +
+	"from 12.34.56.78:9999 " +
+	"accepted " +
+	"tcp:https://ya.ru:443 " +
+	"[inbound -> blacklist] " +
+	"email: user_mail"
 
 func TestParseXRayLogLine(t *testing.T) {
 	// Test cases
@@ -12,7 +18,7 @@ func TestParseXRayLogLine(t *testing.T) {
 		source   string
 		expected XRayLogEntry
 	}{
-		source: config.XRayLogs.BlacklistLineSample,
+		source: blacklistLineSample,
 
 		expected: XRayLogEntry{
 			Time:     time.Date(2025, time.January, 13, 12, 34, 56, 0, time.Local),
@@ -35,8 +41,6 @@ func TestParseXRayLogLine(t *testing.T) {
 }
 
 func TestGetBlacklistedXRayLogEntries(t *testing.T) {
-	config.Ban.Duration = 48 * time.Hour
-
 	t.Run("", func(t *testing.T) {
 		result, err := GetBlacklistedXRayLogEntries()
 		if err != nil {

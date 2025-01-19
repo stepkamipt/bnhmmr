@@ -1,30 +1,32 @@
 package db
 
 import (
-	"goipban/config"
 	"goipban/models"
+	"os"
 	"testing"
 	"time"
 )
 
 func TestConnect(t *testing.T) {
-	config.BannedDB.FilePath = "testing_db.sqlite"
+	dbFilename := "data/testing_db.sqlite"
+	defer os.Remove(dbFilename)
 
-	db, err := ConnectToBannedDB()
+	db, err := ConnectToBannedDB(dbFilename)
 	if err != nil {
 		t.Errorf("err connect database %v", err)
 	}
-	defer db.deleteTestDB()
+	defer db.Close()
 }
 
 func TestInsertBannedIPs(t *testing.T) {
-	config.BannedDB.FilePath = "testing_db.sqlite"
+	dbFilename := "data/testing_db.sqlite"
+	defer os.Remove(dbFilename)
 
-	db, err := ConnectToBannedDB()
+	db, err := ConnectToBannedDB(dbFilename)
 	if err != nil {
 		t.Errorf("err connect database %v", err)
 	}
-	defer db.deleteTestDB()
+	defer db.Close()
 
 	bannedIP := models.BannedIPEntry{
 		IP:         "1.2.3.4",

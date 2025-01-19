@@ -24,7 +24,7 @@ func GetBlacklistedXRayLogEntries() ([]XRayLogEntry, error) {
 	var blacklistedIPEntries []XRayLogEntry
 
 	// Open the logs file in read-only mode
-	logFile, err := os.Open(config.XRayLogs.FilePath)
+	logFile, err := os.Open(config.XRayLogsFilePath)
 	if err != nil {
 		return blacklistedIPEntries, fmt.Errorf("error opening file: %v", err)
 	}
@@ -42,14 +42,14 @@ func GetBlacklistedXRayLogEntries() ([]XRayLogEntry, error) {
 		// Parse current line
 		if parsedLineEntry := parseXRayLogLine(line); parsedLineEntry != nil {
 			// check if line is about ban
-			if parsedLineEntry.Outbound == config.XRayLogs.BlacklistOutbound {
+			if parsedLineEntry.Outbound == config.XRayBlacklistOutbound {
 				lastBaningIPsOccurences[parsedLineEntry.FromIP] = *parsedLineEntry
 			}
 		}
 	}
 
 	// select IPs which was banned not too much time ago
-	earliestBannableTime := time.Now().Add(-config.Ban.Duration)
+	earliestBannableTime := time.Now().Add(-config.BanDuration)
 	for _, logEntry := range lastBaningIPsOccurences {
 		if logEntry.Time.After(earliestBannableTime) {
 			blacklistedIPEntries = append(blacklistedIPEntries, logEntry)

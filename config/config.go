@@ -2,46 +2,43 @@ package config
 
 import "time"
 
-// Ban params
-var Ban = struct {
-	Duration     time.Duration
-	BanCommand   string
-	UnbanCommand string
-}{
-	Duration:     5 * time.Minute,
-	BanCommand:   "ufw insert 2 deny from %s",
-	UnbanCommand: "ufw delete deny from %s",
-}
+const (
+	// ban duration
+	BanDuration = 1 * time.Minute
+	// auto-update ban list interval
+	UpdateInterval = 5 * time.Second
+	// XRay access.log file path
+	XRayLogsFilePath = "/var/log/xray/access.log"
+	// XRay outbound tag for IPs be banned
+	XRayBlacklistOutbound = "blacklist"
+	// banned database file
+	BannedDatabaseFile = "data/banned.sqlitedb"
 
-// Process params
+	// don't really ban anybody, just log info
+	DebugRunStubCommands = false
+)
+
+/*// Process params
 var Process = struct {
 	UpdateInterval time.Duration
 }{
-	UpdateInterval: 15 * time.Second,
+	UpdateInterval: 5 * time.Second,
 }
 
 // XRay logs params
 var XRayLogs = struct {
-	FilePath            string
-	BlacklistLineSample string
-	BlacklistOutbound   string
+	FilePath string
+	BlacklistOutbound string
 }{
-	FilePath:            "/var/log/xray/access.log",
-	BlacklistLineSample: "2025/01/13 12:34:56 from 12.34.56.78:9999 accepted tcp:https://ya.ru:443 [inbound -> blacklist] email: user_mail",
-	BlacklistOutbound:   "blacklist",
+	FilePath: "/var/log/xray/access.log",
+	BlacklistOutbound: "blacklist",
 }
 
 // Banned database params
 var BannedDB = struct {
-	FilePath      string
-	Table         string
-	IPCol         string
-	BannedTillCol string
+	FilePath string
 }{
-	FilePath:      "banned.sqlitedb",
-	Table:         "banned_users",
-	IPCol:         "ip",
-	BannedTillCol: "banned_till",
+	FilePath: "banned.sqlitedb",
 }
 
 // Testing params
@@ -49,4 +46,4 @@ var Testing = struct {
 	RunStubCommands bool
 }{
 	RunStubCommands: false, // don't really ban anybody, just log info
-}
+}*/

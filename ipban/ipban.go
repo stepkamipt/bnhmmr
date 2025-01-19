@@ -8,24 +8,42 @@ import (
 	"strings"
 )
 
-func BanIP(ip string) error {
-	// Ban the IP using UFW
-	log.Printf("Banning IP: %s\n", ip)
-	err := runCommand(fmt.Sprintf(config.Ban.BanCommand, ip))
-	if err != nil {
-		log.Printf("Error banning IP %s: %v\n", ip, err)
-	}
-	return err
+var commands = struct {
+	Ban   string
+	Unban string
+	Apply string
+}{
+	Ban:   "ufw insert 2 deny from %s",
+	Unban: "ufw delete deny from %s",
+	Apply: "ufw reload",
 }
 
-func UnbanIP(ip string) error {
-	// Unan the IP using UFW
-	log.Printf("Unbanning IP: %s\n", ip)
-	err := runCommand(fmt.Sprintf(config.Ban.UnbanCommand, ip))
-	if err != nil {
-		log.Printf("Error unbanning IP %s: %v\n", ip, err)
+// Ban the IP using UFW
+func BanIP(ip string) error {
+	log.Printf("Banning IP: %s\n", ip)
+	if err := runCommand(fmt.Sprintf(commands.Ban, ip)); err != nil {
+		log.Printf("Error banning IP %s: %v\n", ip, err)
+		return err
 	}
-	return err
+	if err := runCommand(commands.Apply); err != nil {
+		log.Printf("Error applying ban: %v\n", err)
+		return err
+	}
+	return nil
+}
+
+// Unan the IP using UFW
+func UnbanIP(ip string) error {
+	log.Printf("Unbanning IP: %s\n", ip)
+	if err := runCommand(fmt.Sprintf(commands.Unban, ip)); err != nil {
+		log.Printf("Error unbanning IP %s: %v\n", ip, err)
+		return err
+	}
+	if err := runCommand(commands.Apply); err != nil {
+		log.Printf("Error applying unban: %v\n", err)
+		return err
+	}
+	return nil
 }
 
 // runCommand executes shell commands
@@ -35,7 +53,7 @@ func runCommand(cmd string) error {
 	head := parts[0]
 	args := parts[1:]
 
-	if config.Testing.RunStubCommands {
+	if config.DebugRunStubCommands {
 		return nil // don't ban, just print
 	}
 
