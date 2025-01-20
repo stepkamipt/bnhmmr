@@ -1,9 +1,16 @@
 package ipban
 
-import "testing"
+import (
+	"goipban/config"
+	"testing"
+)
 
 func TestBanIP(t *testing.T) {
-	ipBanner := CreateIPBanner(false)
+	config, err := config.LoadConfig("")
+	if err != nil {
+		t.Fatalf("Can not load config %s", err)
+	}
+	ipBanner := CreateIPBanner(*config)
 	if err := ipBanner.BanIP("11.22.33.44"); err != nil {
 		t.Errorf("Banning error: %v", err)
 	} else {
@@ -12,7 +19,11 @@ func TestBanIP(t *testing.T) {
 }
 
 func TestUnbanIP(t *testing.T) {
-	ipBanner := CreateIPBanner(false)
+	config, err := config.LoadConfig("")
+	if err != nil {
+		t.Fatalf("Can not load config %s", err)
+	}
+	ipBanner := CreateIPBanner(*config)
 	if err := ipBanner.UnbanIP("11.22.33.44"); err != nil {
 		t.Errorf("Unbanning error: %v", err)
 	} else {

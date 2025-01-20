@@ -4,6 +4,7 @@
   "xray_logs_file": "/var/log/xray/access.log",
   "xray_blacklist_outbound": "blacklist",
   "banned_database_file": "data/banned.sqlitedb",
+  "protected_ufw_rules_count": 1,
 
   "debug_mode": false
 }

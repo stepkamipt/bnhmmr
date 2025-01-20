@@ -20,7 +20,7 @@ type BanningLoop struct {
 
 func CreateBanningLoop(config config.Config) BanningLoop {
 	logParser := logparse.CreateXRayLogParser(config)
-	ipBanner := ipban.CreateIPBanner(config.DebugMode)
+	ipBanner := ipban.CreateIPBanner(config)
 	return BanningLoop{
 		config:    config,
 		logParser: logParser,

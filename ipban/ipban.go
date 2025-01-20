@@ -2,6 +2,7 @@ package ipban
 
 import (
 	"fmt"
+	"goipban/config"
 	"log"
 	"os/exec"
 	"strings"
@@ -12,25 +13,26 @@ var commands = struct {
 	Unban string
 	Apply string
 }{
-	Ban:   "ufw insert 2 deny from %s",
+	Ban:   "ufw insert %d deny from %s",
 	Unban: "ufw delete deny from %s",
 	Apply: "ufw reload",
 }
 
 // tool to ban/unban IPs
 type IPBanner struct {
-	debugMode bool
+	config config.Config
 }
 
 // NewBanDB creates or opens the SQLite database and initializes the table
-func CreateIPBanner(debugMode bool) IPBanner {
-	return IPBanner{debugMode: debugMode}
+func CreateIPBanner(config config.Config) IPBanner {
+	return IPBanner{config: config}
 }
 
 // Ban the IP using UFW
 func (b *IPBanner) BanIP(ip string) error {
 	log.Printf("Banning IP: %s\n", ip)
-	if err := b.runCommand(fmt.Sprintf(commands.Ban, ip)); err != nil {
+	banRecordIdx := b.config.ProtectedUFWRulesCount + 1
+	if err := b.runCommand(fmt.Sprintf(commands.Ban, banRecordIdx, ip)); err != nil {
 		log.Printf("Error banning IP %s: %v\n", ip, err)
 		return err
 	}

@@ -95,7 +95,7 @@ sudo nano /etc/logrotate.d/xray
 sudo systemctl restart cron
 ```
 
-### Установка ufw firewall-а
+### Установка ufw firewall
 
 Банить ip-адреса мы будем с помощью фаервола `ufw`, установить его можно командой `sudo apt install ufw`.
 
@@ -155,6 +155,8 @@ nano config/default_config.json
 - `"xray_blacklist_outbound": "blacklist"` - outboundTag, который мы хотим банить (из конфига xray)
 
 - `"banned_database_file": "data/banned.sqlitedb"` - файл с базой данных, в которой будем вести список забаненных ip (создается автоматически)
+
+- `"protected_ufw_rules_count": 1` - количество первых записей в ufw, которые не трогаем (добавляем записи о банах после них). По умолчанию - 1 (разрешение ssh-соединеня)
 
 - `"debug_mode": false` - режим отладки, при котором никого не баним (чтобы случайно не забанить себя), просто пишем лог
 

@@ -11,12 +11,13 @@ import (
 
 // Config struct with fields for application configuration
 type Config struct {
-	BanDuration           models.Duration `json:"ban_duration"`            // ban duration
-	UpdateInterval        models.Duration `json:"update_interval"`         // auto-update ban list interval
-	XRayLogsFile          string          `json:"xray_logs_file"`          // XRay access.log file path
-	XRayBlacklistOutbound string          `json:"xray_blacklist_outbound"` // XRay outbound tag for IPs be banned
-	BannedDatabaseFile    string          `json:"banned_database_file"`    // banned database file
-	DebugMode             bool            `json:"debug_mode"`              // debug mode, don't ban anybody, just log
+	BanDuration            models.Duration `json:"ban_duration"`              // ban duration
+	UpdateInterval         models.Duration `json:"update_interval"`           // auto-update ban list interval
+	XRayLogsFile           string          `json:"xray_logs_file"`            // XRay access.log file path
+	XRayBlacklistOutbound  string          `json:"xray_blacklist_outbound"`   // XRay outbound tag for IPs be banned
+	BannedDatabaseFile     string          `json:"banned_database_file"`      // banned database file
+	ProtectedUFWRulesCount int             `json:"protected_ufw_rules_count"` // first rules of ufw are protected, add bans after them
+	DebugMode              bool            `json:"debug_mode"`                // debug mode, don't ban anybody, just log
 }
 
 //go:embed default_config.json
