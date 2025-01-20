@@ -1,8 +1,9 @@
 {
-  "debug_mode": false,
   "ban_duration": "1m",
   "update_interval": "5s",
   "xray_logs_file": "/var/log/xray/access.log",
   "xray_blacklist_outbound": "blacklist",
-  "banned_database_file": "data/banned.sqlitedb"
+  "banned_database_file": "data/banned.sqlitedb",
+
+  "debug_mode": false
 }
